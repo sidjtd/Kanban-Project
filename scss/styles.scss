@@ -1,6 +1,16 @@
 @import 'partials/_reset';
 @import 'partials/_clearfix';
 
+.arrowbutton {
+  display: flex-box;
+  align-content: flex-end;
+  font-size: 8px;
+  border: none;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: bold;
+  background-color: #e9ece9;
+}
 .upbutton {
   display: flex-box;
   align-content: flex-end;
@@ -42,6 +52,7 @@
 }
 
 .buttonDiv {
+  text-align: center;
   align-items: flex-end;
 }
 
@@ -58,7 +69,7 @@
 }
 
 body {
-  background-image: url("./../video/room.jpg");
+  background-image: url("./../media/room.jpg");
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -116,7 +127,8 @@ body {
 }
 
 .theposts {
-  text-align: justify-all;
+  text-transform:capitalize;
+  text-align: left;
   font-size: 10px;
   font-family: sans-serif;
   font-style: none;
@@ -152,6 +164,8 @@ body {
 .boldme {
   font-weight: bold;
 }
+
+
 
 
 #vidpause {
@@ -194,7 +208,7 @@ video#bgvid {
 }
 @media (max-width: 767px) {
   .fullscreen-bg {
-    background: url('../img/videoframe.jpg') center center / cover no-repeat;
+    background: url('../media/room.jpg') center center / cover no-repeat;
   }
   .fullscreen-bg__video {
     display: none;

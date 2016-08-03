@@ -18,15 +18,14 @@ class BigKanban extends React.Component {
     this.deleteCard = this.deleteCard.bind(this)
     this.removeItAll = this.removeItAll.bind(this)
     this.leftMove = this.leftMove.bind(this)
+    this.rightMove = this.rightMove.bind(this)
     this.seedIt = this.seedIt.bind(this)
   };
-
   componentDidMount() {
     this.getMongoData();
   };
 
   getMongoData(){
-    console.log("Im in get mongo data baby");
     let componentContext = this;
     var oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function () {
@@ -48,52 +47,66 @@ class BigKanban extends React.Component {
   }
 
   updateCard(cardId, status) {
+    if(status<3){
       let componentContext = this;
-      var holder = 2;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
         componentContext.getMongoData();
-        console.log("hey you're in update");
       });
       oReq.open("PUT", "/update");
       oReq.setRequestHeader("Content-Type", "application/json");
-      oReq.send(JSON.stringify({id:cardId, stat:holder}));
+      oReq.send(JSON.stringify({id:cardId}));
     }
+  }
 
-
-  leftMove(cardId) {
+  leftMove(cardId, status) {
+    if(status>1){
       let componentContext = this;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
         componentContext.getMongoData();
-        console.log("hey you're in the left mover");
       });
       oReq.open("PUT", "/lefter");
       oReq.setRequestHeader("Content-Type", "application/json");
       oReq.send(JSON.stringify({id:cardId}));
     }
+  }
+
+  rightMove(cardId, status) {
+    if(status<3){
+      let componentContext = this;
+      const oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", function (){
+        componentContext.getMongoData();
+      });
+      oReq.open("PUT", "/righter");
+      oReq.setRequestHeader("Content-Type", "application/json");
+      oReq.send(JSON.stringify({id:cardId}));
+    }
+  }
 
   newCard(card) {
     if(this.state.toggler){
       this.state.toggler = false;
     }else{
       this.state.toggler = true;
-    }
-    this.getMongoData();
+    }this.getMongoData();
   }
 
-  addCard() {
-      var componentContext = this;
-      const titleVar = document.getElementById('titleField').value;
-      const descVar = document.getElementById('descriptionField').value;
-      const priorityVar = document.getElementById('priorityField').value;
-      const statusVar= document.getElementById('statusField').value;
-      const authorVar = document.getElementById('createdByField').value;
-      const assignedVar = document.getElementById('assignedToField').value;
+  addCard(e) {
+    e.preventDefault();
+    var componentContext = this;
+    const titleVar = document.getElementById('titleField').value;
+    const descVar = document.getElementById('descriptionField').value;
+    const priorityVar = document.getElementById('priorityField').value;
+    const statusVar= document.getElementById('statusField').value;
+    const authorVar = document.getElementById('createdByField').value;
+    const assignedVar = document.getElementById('assignedToField').value;
+    if(titleVar&&authorVar&&assignedVar){
       const oReq = new XMLHttpRequest();
-      // oReq.addEventListener('load', function(){
-      //     // componentContext.getMongoData();
-      // });
+      oReq.addEventListener('load', function(){
+          componentContext.getMongoData();
+      });
       oReq.open('POST', "/addACard",true);
       oReq.setRequestHeader("Content-Type", "application/json")
       oReq.send(JSON.stringify({
@@ -105,6 +118,7 @@ class BigKanban extends React.Component {
         status: `${statusVar}`
       }));
     }
+  }
 
   deleteCard(cardId) {
     let componentContext = this;
@@ -145,6 +159,9 @@ class BigKanban extends React.Component {
       <div>
       <div id="bigk">
         <h1> ƁȉƓ ǨÅȠƁÅȠ</h1><br/>
+      <button onClick={this.seedIt}>SEED (TEST ONLY)</button>
+      <input type="number" name="seedNothing" id="seedId" min="1" max="9" placeholder="0"/>
+      <button onClick={this.removeItAll}>DROP (TEST ONLY)</button><br/>
         {this.state.toggler ?
           <div id="inputfield">
             <div className="left"><button className="inbutton" onClick={this.newCard}>CLOSE</button></div><br/>
@@ -174,39 +191,36 @@ class BigKanban extends React.Component {
           </div>: <div><button className="inbutton" onClick={this.newCard}>NEW MEMO</button></div>} <br/>
 
         <div id="postContainer">
-          <PostColumns data={this.state.ColData} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
-          <PostColumns data={this.state.ColDataTwo} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
-          <PostColumns data={this.state.ColDataThree} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
+          <PostColumns data={this.state.ColData} rightMove={this.rightMove} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
+          <PostColumns data={this.state.ColDataTwo} rightMove={this.rightMove} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
+          <PostColumns data={this.state.ColDataThree} rightMove={this.rightMove} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
         </div>
-           <button onClick={this.seedIt}>SEED (TEST ONLY)</button>
-           <input type="number" name="seedNothing" id="seedId" min="1" max="9" placeholder="0"/>
-           <button onClick={this.removeItAll}>DROP (TEST ONLY)</button>
       </div><br/>
       </div>
     );
   };
 };
 
-// var vid = document.getElementById("bgvid"),
-// pauseButton = document.getElementById("vidpause");
-// function vidFade() {
-//     vid.classList.add("stopfade");
-// }
-// vid.addEventListener('ended', function() {
-//     // only functional if "loop" is removed
-//      vid.pause();
-//   vidFade();
-// });
-// pauseButton.addEventListener("click", function() {
-//     vid.classList.toggle("stopfade");
-//   if (vid.paused) {
-// vid.play();
-//     pauseButton.innerHTML = "◇";
-//   } else {
-//         vid.pause();
-//         pauseButton.innerHTML = "◆";
-//   }
-// })
+var vid = document.getElementById("bgvid"),
+pauseButton = document.getElementById("vidpause");
+function vidFade() {
+    vid.classList.add("stopfade");
+}
+vid.addEventListener('ended', function() {
+  // only functional if "loop" is removed
+  vid.pause();
+  vidFade();
+});
+pauseButton.addEventListener("click", function() {
+  vid.classList.toggle("stopfade");
+  if (vid.paused) {
+    vid.play();
+    pauseButton.innerHTML = "◇";
+  }else {
+    vid.pause();
+    pauseButton.innerHTML = "◆";
+  }
+});
 /*===================================
 =            PostColumns            =
 ===================================*/
@@ -215,27 +229,20 @@ class PostColumns extends React.Component {
     // console.log("3 tracker",this.props);
     var parent = this;
     var theNode = this.props.data.map( function (passedData) {
-      return (
-        <PostItems {...passedData}
-          leftMove={parent.props.leftMove}
-          updateCard={parent.props.updateCard}
-          deleteCard={parent.props.deleteCard}
-          getMongoData={parent.props.getMongoData}
-          key={passedData._id}
-        />
-        )
+    return (
+      <PostItems {...passedData} rightMove={parent.props.rightMove} leftMove={parent.props.leftMove} updateCard={parent.props.updateCard} deleteCard={parent.props.deleteCard} getMongoData={parent.props.getMongoData} key={passedData._id}/>
+      )
     });
     return (
       <div id="list">
         <div><br/>
-        <div id="notclear"><h1>{this.props.colInfo}</h1></div>
-        { theNode }
+          <div id="notclear"><h1>{this.props.colInfo}</h1></div>
+          { theNode }
         </div>
       </div>
     );
   };
 };
-
 /*==================================
 =            Post Items            =
 ==================================*/
@@ -246,23 +253,26 @@ class PostItems extends React.Component {
     this.updateCard = this.updateCard.bind(this)
     this.deleteCard = this.deleteCard.bind(this)
     this.leftMove = this.leftMove.bind(this)
+    this.rightMove = this.rightMove.bind(this)
   }
   componentDidMount() {
-      this.setState({
-        _id: this.props._id,
-        title: this.props.title,
-        priority: this.props.priority,
-        status:this.props.status,
-        createdBy:this.props.createdBy,
-        asssignedTo:this.props.assignedTo
-      })
+    this.setState({
+      _id: this.props._id,
+      title: this.props.title,
+      priority: this.props.priority,
+      status:this.props.status,
+      createdBy:this.props.createdBy,
+      asssignedTo:this.props.assignedTo
+    })
+  }
+  rightMove(){
+    this.props.rightMove(this.state._id, this.state.status);
   }
   leftMove(){
-    this.props.leftMove(this.state._id)
+    this.props.leftMove(this.state._id, this.state.status);
   }
   updateCard(){
-    this.props.updateCard(this.state._id),
-    this.props.updateCard(this.state.status)
+    this.props.rightMove(this.state._id, this.state.status);
   }
   deleteCard(){
     this.props.deleteCard(this.state._id);
@@ -272,37 +282,34 @@ class PostItems extends React.Component {
     return (
       <div className='theposts'>
         <div id={this.state._id}>
-          <span className="boldme">Title:</span> {this.state.title}<br/>
-          <span className="boldme">By:</span> {this.state.createdBy}<br/>
-          <span className="boldme">For: </span>{this.state.assignedTo}<br/>
+          <span className="boldme">Task:</span> {this.state.title}<br/>
+          <span className="boldme">By: &emsp;&nbsp; </span> {this.state.createdBy}<br/>
+          <span className="boldme">For: &emsp; </span>{this.state.assignedTo}<br/>
           <span className="boldme">Priority:</span> {this.state.priority}<br/>
-        </div>
+        </div><br/>
         <div className="buttonDiv"><br/>
           {/*<a className="updateButton" href={this.updateCard}>Update Status</a>*/}
-          <button className="leftbutton" onClick={this.leftMove}>left</button>
+          <button className="arrowbutton" onClick={this.leftMove}>←</button>
           <button className="upbutton" onClick={this.updateCard}>Update</button>
           <button className="delbutton" onClick={this.deleteCard}>Delete</button>
+          <button className="arrowbutton" onClick={this.rightMove}>→</button>
         </div>
       </div>
     );
   };
 };
-
 /*==================================
 =            Prototypes            =
 ==================================*/
 BigKanban.PropTypes = {
   data: React.PropTypes.array
 };
-
 BigKanban.defaultProps = {
   data: []
 };
-
 function reqListener(){
   console.log(this.responseText);
 }
-
 /*====================================
 =            React Render            =
 ====================================*/

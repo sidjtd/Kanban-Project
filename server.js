@@ -54,7 +54,7 @@ function seeder(howMany) {
   var letters = ['a','q','x','b','r','y','c','s','z'];
   var stat = [1,2,3,1,2,3,1,2,3];
   for (var i = 0; i < howMany; i++){
-    card = new Card({ "title" : letters[i]+"title", "description" : "some desc", "priority" : "red alert", "status" : stat[i], "createdBy" : "bob", "assignedTo" : "tyler"});
+    card = new Card({ "title" : letters[i]+" Task", "description" : "some desc", "priority" : "URGENT", "status" : stat[i], "createdBy" : "DevLeague", "assignedTo" : "Tyler"});
     card.save();
   }
 };
@@ -87,8 +87,6 @@ app.post('/addACard', (req, res) => {
     "assignedTo": rq.handler
   });
   card.save(function(err) {
-    console.log(err,"lots of donuts");
-    console.log('yoyo I be saving mad quick');
   });
     res.send();
 });
@@ -107,10 +105,18 @@ app.put('/update', function(req, res) {
 });
 
 app.put('/lefter', function(req, res) {
-  console.log("hey bitch move left");
+  // if(req.body.id===req.body.id){
+    console.log('haha');
+  // }
   Card.update({ _id: req.body.id},
      { $inc: {status: -1}}, () => {
-    res.json({message: 'decremented!'});
+    res.json({});
+   });
+});
+app.put('/righter', function(req, res) {
+  Card.update({ _id: req.body.id},
+     { $inc: {status: 1}}, () => {
+    res.json({});
    });
 });
 
