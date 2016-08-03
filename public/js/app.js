@@ -17,6 +17,7 @@ class BigKanban extends React.Component {
     this.newCard = this.newCard.bind(this)
     this.deleteCard = this.deleteCard.bind(this)
     this.removeItAll = this.removeItAll.bind(this)
+    this.leftMove = this.leftMove.bind(this)
     this.seedIt = this.seedIt.bind(this)
   };
 
@@ -25,30 +26,30 @@ class BigKanban extends React.Component {
   };
 
   getMongoData(){
+    console.log("Im in get mongo data baby");
     let componentContext = this;
     var oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function () {
       let xhrData = JSON.parse(this.response)
       componentContext.setState({
         ColData: xhrData.filter(function (card){
-          return card.status === 'todo';
+          return card.status === 1;
         }),
         ColDataTwo: xhrData.filter(function (card){
-          return card.status === 'doing';
+          return card.status === 2;
         }),
         ColDataThree: xhrData.filter(function (card){
-          return card.status === 'done';
+          return card.status === 3;
         }),
       });
     });
-    oReq.open("GET", "http://localhost:2459/getAll");
+    oReq.open("GET", "/getAll");
     oReq.send();
   }
 
   updateCard(cardId, status) {
       let componentContext = this;
-      var holder = '';
-      holder = 'doing';
+      var holder = 2;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
         componentContext.getMongoData();
@@ -57,6 +58,19 @@ class BigKanban extends React.Component {
       oReq.open("PUT", "/update");
       oReq.setRequestHeader("Content-Type", "application/json");
       oReq.send(JSON.stringify({id:cardId, stat:holder}));
+    }
+
+
+  leftMove(cardId) {
+      let componentContext = this;
+      const oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", function (){
+        componentContext.getMongoData();
+        console.log("hey you're in the left mover");
+      });
+      oReq.open("PUT", "/lefter");
+      oReq.setRequestHeader("Content-Type", "application/json");
+      oReq.send(JSON.stringify({id:cardId}));
     }
 
   newCard(card) {
@@ -68,7 +82,7 @@ class BigKanban extends React.Component {
     this.getMongoData();
   }
 
-  addCard(cardId) {
+  addCard() {
       var componentContext = this;
       const titleVar = document.getElementById('titleField').value;
       const descVar = document.getElementById('descriptionField').value;
@@ -77,10 +91,10 @@ class BigKanban extends React.Component {
       const authorVar = document.getElementById('createdByField').value;
       const assignedVar = document.getElementById('assignedToField').value;
       const oReq = new XMLHttpRequest();
-      oReq.addEventListener('load', function(){
-          componentContext.getMongoData();
-      });
-      oReq.open('POST', "/addACard");
+      // oReq.addEventListener('load', function(){
+      //     // componentContext.getMongoData();
+      // });
+      oReq.open('POST', "/addACard",true);
       oReq.setRequestHeader("Content-Type", "application/json")
       oReq.send(JSON.stringify({
         title: `${titleVar}`,
@@ -147,22 +161,22 @@ class BigKanban extends React.Component {
               </select><br/>
               Status:&emsp; &emsp;
               <select id="statusField">
-                <option value="todo">To Do</option>
-                <option value="doing">Doing</option>
-                <option value="done">Done</option>
+                <option value="1">To Do</option>
+                <option value="2">Doing</option>
+                <option value="3">Done</option>
               </select><br/>
               Created By:&emsp; &emsp;
               <input type="text" id="createdByField" placeholder="name"/><br/>
               Assigned To:&#160;
               <input type="text" id="assignedToField" placeholder="name"/><br/><br/>
-              <div className="left"><button className="inbutton" onClick={this.addCard}>SUBMIT</button></div>
+              <div className="left"><button className="inbutton" onClick={this.addCard}>SUBfMIT</button></div>
             </form>
           </div>: <div><button className="inbutton" onClick={this.newCard}>NEW MEMO</button></div>} <br/>
 
         <div id="postContainer">
-          <PostColumns data={this.state.ColData} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
-          <PostColumns data={this.state.ColDataTwo}  updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
-          <PostColumns data={this.state.ColDataThree} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
+          <PostColumns data={this.state.ColData} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
+          <PostColumns data={this.state.ColDataTwo} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
+          <PostColumns data={this.state.ColDataThree} leftMove={this.leftMove} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
         </div>
            <button onClick={this.seedIt}>SEED (TEST ONLY)</button>
            <input type="number" name="seedNothing" id="seedId" min="1" max="9" placeholder="0"/>
@@ -173,26 +187,26 @@ class BigKanban extends React.Component {
   };
 };
 
-var vid = document.getElementById("bgvid"),
-pauseButton = document.getElementById("vidpause");
-function vidFade() {
-    vid.classList.add("stopfade");
-}
-vid.addEventListener('ended', function() {
-    // only functional if "loop" is removed
-     vid.pause();
-  vidFade();
-});
-pauseButton.addEventListener("click", function() {
-    vid.classList.toggle("stopfade");
-  if (vid.paused) {
-vid.play();
-    pauseButton.innerHTML = "◇";
-  } else {
-        vid.pause();
-        pauseButton.innerHTML = "◆";
-  }
-})
+// var vid = document.getElementById("bgvid"),
+// pauseButton = document.getElementById("vidpause");
+// function vidFade() {
+//     vid.classList.add("stopfade");
+// }
+// vid.addEventListener('ended', function() {
+//     // only functional if "loop" is removed
+//      vid.pause();
+//   vidFade();
+// });
+// pauseButton.addEventListener("click", function() {
+//     vid.classList.toggle("stopfade");
+//   if (vid.paused) {
+// vid.play();
+//     pauseButton.innerHTML = "◇";
+//   } else {
+//         vid.pause();
+//         pauseButton.innerHTML = "◆";
+//   }
+// })
 /*===================================
 =            PostColumns            =
 ===================================*/
@@ -203,6 +217,7 @@ class PostColumns extends React.Component {
     var theNode = this.props.data.map( function (passedData) {
       return (
         <PostItems {...passedData}
+          leftMove={parent.props.leftMove}
           updateCard={parent.props.updateCard}
           deleteCard={parent.props.deleteCard}
           getMongoData={parent.props.getMongoData}
@@ -230,6 +245,7 @@ class PostItems extends React.Component {
     this.state = {_id: 0, title: '', priority: '', status: '', createdBy: '', assignedTo: ''}
     this.updateCard = this.updateCard.bind(this)
     this.deleteCard = this.deleteCard.bind(this)
+    this.leftMove = this.leftMove.bind(this)
   }
   componentDidMount() {
       this.setState({
@@ -241,11 +257,13 @@ class PostItems extends React.Component {
         asssignedTo:this.props.assignedTo
       })
   }
+  leftMove(){
+    this.props.leftMove(this.state._id)
+  }
   updateCard(){
     this.props.updateCard(this.state._id),
     this.props.updateCard(this.state.status)
   }
-
   deleteCard(){
     this.props.deleteCard(this.state._id);
   }
@@ -261,6 +279,7 @@ class PostItems extends React.Component {
         </div>
         <div className="buttonDiv"><br/>
           {/*<a className="updateButton" href={this.updateCard}>Update Status</a>*/}
+          <button className="leftbutton" onClick={this.leftMove}>left</button>
           <button className="upbutton" onClick={this.updateCard}>Update</button>
           <button className="delbutton" onClick={this.deleteCard}>Delete</button>
         </div>

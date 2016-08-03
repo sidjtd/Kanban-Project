@@ -21,7 +21,7 @@ const Card = mongoose.model('Card', {
   title: String,
   description: String,
   priority: String,
-  status : String,
+  status : Number,
   createdBy: String,
   assignedTo: String,
   date: {type: Date, default: Date.now}
@@ -52,7 +52,7 @@ router.get('/', function(req, res) {
 function seeder(howMany) {
   var card;
   var letters = ['a','q','x','b','r','y','c','s','z'];
-  var stat = ['todo','doing','done','todo','doing','done','todo','doing','done'];
+  var stat = [1,2,3,1,2,3,1,2,3];
   for (var i = 0; i < howMany; i++){
     card = new Card({ "title" : letters[i]+"title", "description" : "some desc", "priority" : "red alert", "status" : stat[i], "createdBy" : "bob", "assignedTo" : "tyler"});
     card.save();
@@ -62,7 +62,7 @@ function seeder(howMany) {
 app.get('/getAll', function(req, res) {
   Card.find({})
     .then((dataSomething) => {
-      console.log(dataSomething)
+      // console.log(dataSomething)
       res.send(dataSomething)
     })
     .catch((err) => {
@@ -86,8 +86,11 @@ app.post('/addACard', (req, res) => {
     "createdBy": rq.author,
     "assignedTo": rq.handler
   });
-  card.save();
-  res.send({test:"Added!"});
+  card.save(function(err) {
+    console.log(err,"lots of donuts");
+    console.log('yoyo I be saving mad quick');
+  });
+    res.send();
 });
 
 app.post('/seed', (req, res) => {
@@ -98,8 +101,16 @@ app.post('/seed', (req, res) => {
 
 app.put('/update', function(req, res) {
   Card.update({ _id: req.body.id},
-     {$set: {status: req.body.stat}}, () => {
+     { $set: {status: req.body.stat}}, () => {
     res.json({message: 'PUTPUT!'});
+   });
+});
+
+app.put('/lefter', function(req, res) {
+  console.log("hey bitch move left");
+  Card.update({ _id: req.body.id},
+     { $inc: {status: -1}}, () => {
+    res.json({message: 'decremented!'});
    });
 });
 
