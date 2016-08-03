@@ -32,7 +32,6 @@ db.once('open', () => {
  console.log('db.once');
 });
 
-
 /*==================================
 =            Middleware            =
 ==================================*/
@@ -95,6 +94,13 @@ app.post('/seed', (req, res) => {
   console.log(req.body);
 　seeder(req.body.num);
   res.json({message: 'Seeded!'});
+});
+
+app.put('/update', function(req, res) {
+  Card.update({ _id: req.body.id},
+     {$set: {status: req.body.stat}}, () => {
+    res.json({message: 'PUTPUT!'});
+   });
 });
 
 app.delete('/delete', function(req, res) {

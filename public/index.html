@@ -11,7 +11,13 @@
 <body>
   <div id="top">
     <div id="content"></div>
-  </div>
+  </div><span id="vidpause">◇</span>
   <script type="text/babel" src="js/app.js"></script>
+  <div class="fullscreen-bg">
+    <video playsinline autoplay muted loop id="bgvid" class="fullscreen-bg__video">
+        <source src="video/polina.webm" type="video/webm">
+        <source src="video/polina.mp4" type="video/mp4">
+    </video>
+  </div>
 </body>
 </html>

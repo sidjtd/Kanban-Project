@@ -45,15 +45,19 @@ class BigKanban extends React.Component {
     oReq.send();
   }
 
-  updateCard(card) {
-    var oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function (){
-      console.log("Update button calls for u");
-    });
-    oReq.open("GET", "http://localhost:2459/test");
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send(JSON.stringify({status: 'statusButtonNext'}));
-  }
+  updateCard(cardId, status) {
+      let componentContext = this;
+      var holder = '';
+      holder = 'doing';
+      const oReq = new XMLHttpRequest();
+      oReq.addEventListener("load", function (){
+        componentContext.getMongoData();
+        console.log("hey you're in update");
+      });
+      oReq.open("PUT", "/update");
+      oReq.setRequestHeader("Content-Type", "application/json");
+      oReq.send(JSON.stringify({id:cardId, stat:holder}));
+    }
 
   newCard(card) {
     if(this.state.toggler){
@@ -124,49 +128,71 @@ class BigKanban extends React.Component {
 
   render() {
     return (
+      <div>
       <div id="bigk">
-        <h1> ƁȉƓ ǨÅȠƁÅȠ</h1>
+        <h1> ƁȉƓ ǨÅȠƁÅȠ</h1><br/>
         {this.state.toggler ?
           <div id="inputfield">
-            <button onClick={this.newCard}>CLOSE</button> <br/><br/>
-            <form>
-              Title:<br/>
-              <input type="text" id="titleField" placeholder="Task"/><br/><br/>
-              Description:<br/>
-              <input type="text" id="descriptionField" placeholder="Details"/><br/><br/>
-              Priority:<br/>
+            <div className="left"><button className="inbutton" onClick={this.newCard}>CLOSE</button></div><br/>
+            <form id="theNewForm">
+              Title: &emsp;
+              <input type="text" id="titleField" placeholder="Task"/><br/>
+              Description:&emsp;
+              <input type="text" id="descriptionField" placeholder="Details"/><br/>
+              Priority:&emsp;
               <select id="priorityField">
                 <option value="urgent">Urgent</option>
                 <option value="necessary">Necessary</option>
                 <option value="mustDo">Must Do</option>
-              </select><br/><br/>
-              Status:<br/>
+              </select><br/>
+              Status:&emsp; &emsp;
               <select id="statusField">
                 <option value="todo">To Do</option>
                 <option value="doing">Doing</option>
                 <option value="done">Done</option>
-              </select><br/><br/>
-              Created By:<br/>
-              <input type="text" id="createdByField" placeholder="name"/><br/><br/>
-              Assigned To:<br/>
+              </select><br/>
+              Created By:&emsp; &emsp;
+              <input type="text" id="createdByField" placeholder="name"/><br/>
+              Assigned To:&#160;
               <input type="text" id="assignedToField" placeholder="name"/><br/><br/>
-              <button onClick={this.addCard}>SUBMIT</button><br/><br/>
+              <div className="left"><button className="inbutton" onClick={this.addCard}>SUBMIT</button></div>
             </form>
-          </div>: <div><button onClick={this.newCard}>NEW MEMO</button></div>} <br/>
+          </div>: <div><button className="inbutton" onClick={this.newCard}>NEW MEMO</button></div>} <br/>
 
         <div id="postContainer">
           <PostColumns data={this.state.ColData} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
           <PostColumns data={this.state.ColDataTwo}  updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
           <PostColumns data={this.state.ColDataThree} updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
         </div>
-           <br/><button onClick={this.seedIt}>SEED (TEST ONLY)</button>
+           <button onClick={this.seedIt}>SEED (TEST ONLY)</button>
            <input type="number" name="seedNothing" id="seedId" min="1" max="9" placeholder="0"/>
            <button onClick={this.removeItAll}>DROP (TEST ONLY)</button>
+      </div><br/>
       </div>
     );
   };
 };
 
+var vid = document.getElementById("bgvid"),
+pauseButton = document.getElementById("vidpause");
+function vidFade() {
+    vid.classList.add("stopfade");
+}
+vid.addEventListener('ended', function() {
+    // only functional if "loop" is removed
+     vid.pause();
+  vidFade();
+});
+pauseButton.addEventListener("click", function() {
+    vid.classList.toggle("stopfade");
+  if (vid.paused) {
+vid.play();
+    pauseButton.innerHTML = "◇";
+  } else {
+        vid.pause();
+        pauseButton.innerHTML = "◆";
+  }
+})
 /*===================================
 =            PostColumns            =
 ===================================*/
@@ -186,8 +212,10 @@ class PostColumns extends React.Component {
     });
     return (
       <div id="list">
-        <h1>{this.props.colInfo}</h1>
+        <div><br/>
+        <div id="notclear"><h1>{this.props.colInfo}</h1></div>
         { theNode }
+        </div>
       </div>
     );
   };
@@ -214,7 +242,8 @@ class PostItems extends React.Component {
       })
   }
   updateCard(){
-    this.props.updateCard(this.state)
+    this.props.updateCard(this.state._id),
+    this.props.updateCard(this.state.status)
   }
 
   deleteCard(){
@@ -223,18 +252,18 @@ class PostItems extends React.Component {
 
   render() {
     return (
-      <div
-      className='theposts'
-
-      id={this.state._id}>
-        <h3>{this.state.title}</h3>
-            {this.state.priority}<br/>
-
-          <div className="buttonDiv">
-            {/*<a className="updateButton" href={this.updateCard}>Update Status</a>*/}
-            <button onClick={this.updateCard}>Update</button>
-            <button onClick={this.deleteCard}>Delete</button>
-          </div>
+      <div className='theposts'>
+        <div id={this.state._id}>
+          <span className="boldme">Title:</span> {this.state.title}<br/>
+          <span className="boldme">By:</span> {this.state.createdBy}<br/>
+          <span className="boldme">For: </span>{this.state.assignedTo}<br/>
+          <span className="boldme">Priority:</span> {this.state.priority}<br/>
+        </div>
+        <div className="buttonDiv"><br/>
+          {/*<a className="updateButton" href={this.updateCard}>Update Status</a>*/}
+          <button className="upbutton" onClick={this.updateCard}>Update</button>
+          <button className="delbutton" onClick={this.deleteCard}>Delete</button>
+        </div>
       </div>
     );
   };
