@@ -23,16 +23,7 @@ const mongoose = require('mongoose');
       mongoose.connect('mongodb://localhost/Kanban');
       mongoose.Promise = require('bluebird');
 const db = mongoose.connection;
-// const CardSchema = require('./public/js/models/CardSchema');
-const Card = mongoose.model('Card', {
-  title: String,
-  description: String,
-  priority: String,
-  status : Number,
-  createdBy: String,
-  assignedTo: String,
-  date: {type: Date, default: Date.now}
-});
+const Card = require('./public/js/models/CardSchema');
 
 db.on('error',  console.error.bind(console, 'connection error:'));
 db.once('open', () => {
