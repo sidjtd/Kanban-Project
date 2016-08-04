@@ -51,14 +51,7 @@ if (isDeveloping) {
   const middleware = webpackMiddleware(compiler, {
     publicPath: config.output.publicPath,
     contentBase: 'src',
-    stats: {
-      colors: true,
-      hash: false,
-      timings: true,
-      chunks: false,
-      chunkModules: false,
-      modules: false,
-    },
+    stats: {colors: true}
   });
   const response = (req, res) => {
     res.write(middleware.fileSystem.readFileSync(path.resolve(__dirname, 'dist/index.html')));
@@ -68,8 +61,6 @@ if (isDeveloping) {
   app.use(webpackHotMiddleware(compiler));
   app.get('*', response);
 } else {
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(bodyParser.json());
   app.use(express.static(`${__dirname}/dist`));
   app.get('*', (req, res) => {
     res.write(

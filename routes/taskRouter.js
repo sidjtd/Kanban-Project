@@ -85,7 +85,6 @@ eRouter.delete('/removeall', function(req, res) {
   removeAll(db, function(req, res) {
     Card.find({})
       .then((dataSomething) => {
-        console.log(dataSomething)
       })
       .catch((err) => {
         console.log('this is the error' + err)
