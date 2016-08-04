@@ -1,12 +1,13 @@
 'use strict';
 const express = require('express');
-const Router = express.Router();
-const Card = require('../public/js/models/CardSchema');
-const bodyParser = require('body-parser');
+const eRouter = express.Router();
+const Card = require('./../public/js/models/CardSchema');
+const mongoose = require('mongoose');
+const db = mongoose.connection;
 /*==============================
 =            Routes            =
 ==============================*/
-Router.get('/getAll', function(req, res) {
+eRouter.get('/getAll', function(req, res) {
   Card.find({})
     .then((dataSomething) => {
       // console.log(dataSomething)
@@ -17,49 +18,51 @@ Router.get('/getAll', function(req, res) {
     });
 });
 
-function seeder(howMany) {
-  var card;
-  var letters = ['a','q','x','b','r','y','c','s','z'];
-  var stat = [1,2,3,1,2,3,1,2,3];
-  for (var i = 0; i < howMany; i++){
-    card = new Card({ "title" : letters[i]+" Task", "description" : "some desc", "priority" : "URGENT", "status" : stat[i], "createdBy" : "DevLeague", "assignedTo" : "Tyler"});
-    card.save();
-  }
-};
-
-Router.put('/update', function(req, res) {
+eRouter.put('/update', function(req, res) {
   Card.update({ _id: req.body.id},
      { $set: {status: req.body.stat}}, () => {
     res.json({message: 'PUTPUT!'});
    });
 });
 
-Router.put('/lefter', function(req, res) {
+eRouter.put('/lefter', function(req, res) {
   Card.update({ _id: req.body.id},
      { $inc: {status: -1}}, () => {
     res.json({});
    });
 });
 
-Router.put('/righter', function(req, res) {
+eRouter.put('/righter', function(req, res) {
   Card.update({ _id: req.body.id},
      { $inc: {status: 1}}, () => {
     res.json({});
    });
 });
 
-Router.delete('/delete', function(req, res) {
+eRouter.delete('/delete', function(req, res) {
   Card.remove({_id: req.body.id}, () => {
   res.json({message: 'Deleted!'});
   });
 });
 
-Router.post('/seed', (req, res) => {
+function seeder(howMany) {
+  var newNum = howMany;
+  newNum = 6;
+  var card;
+  var letters = ['a','q','x','b','r','y','c','s','z'];
+  var stat = [1,2,3,1,2,3,1,2,3];
+  for (var i = 0; i < newNum; i++){
+    card = new Card({ "title" : letters[i]+" Task", "description" : "some desc", "priority" : "URGENT", "status" : stat[i], "createdBy" : "DevLeague", "assignedTo" : "Tyler"});
+    card.save();
+  }
+};
+
+eRouter.post('/seed', (req, res) => {
 　seeder(req.body.num);
   res.json({message: 'Seeded!'});
 });
 
-Router.post('/addACard', (req, res) => {
+eRouter.post('/addACard', (req, res) => {
   var rq = req.body;
   var card = new Card({
     "title" : rq.title,
@@ -78,7 +81,7 @@ var removeAll = function(db, cb) {
   Card.find({ _id: { $exists: true}}).remove(cb);
 };
 
-Router.delete('/removeall', function(req, res) {
+eRouter.delete('/removeall', function(req, res) {
   removeAll(db, function(req, res) {
     Card.find({})
       .then((dataSomething) => {
@@ -91,4 +94,4 @@ Router.delete('/removeall', function(req, res) {
   res.json({message: 'All Deleted!'});
 });
 
-module.exports = Router;
+module.exports = eRouter;
