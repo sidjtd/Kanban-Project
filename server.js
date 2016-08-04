@@ -1,13 +1,21 @@
-'use strict'
-/*=====================================
-=            DevDependencies          =
-=====================================*/
+'use strict';
+const gulp = require('gulp');
+var webpackStream = require('webpack-stream');
+gulp.task('default', function() {
+  return gulp.src('src/entry.js')
+    .pipe(webpackStream())
+    .pipe(gulp.dest('dist/'));
+});
 const bodyParser = require('body-parser');
 const express = require('express');
-const app = express();
-const gulp = require('gulp');
+const path = require('path');
 const router = express.Router();
-
+const app = express();
+const fs = require('fs');
+const webpack = require('webpack');
+const webpackMiddleware = require('webpack-dev-middleware');
+const webpackHotMiddleware = require('webpack-hot-middleware');
+const config = require('./webpack.config.js');
 /*================================
 =            Mongoose            =
 ================================*/
@@ -15,7 +23,6 @@ const mongoose = require('mongoose');
       mongoose.connect('mongodb://localhost/Kanban');
       mongoose.Promise = require('bluebird');
 const db = mongoose.connection;
-// console.log(db);
 // const CardSchema = require('./public/js/models/CardSchema');
 const Card = mongoose.model('Card', {
   title: String,
@@ -32,33 +39,11 @@ db.once('open', () => {
  console.log('db.once');
 });
 
-/*==================================
-=            Middleware            =
-==================================*/
-app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-//Testing Route
-app.use('/test', router);
-router.get('/', function(req, res) {
-  res.json({ message: 'Test route success!'  });
-});
-
-
 /*==============================
 =            Routes            =
 ==============================*/
-function seeder(howMany) {
-  var card;
-  var letters = ['a','q','x','b','r','y','c','s','z'];
-  var stat = [1,2,3,1,2,3,1,2,3];
-  for (var i = 0; i < howMany; i++){
-    card = new Card({ "title" : letters[i]+" Task", "description" : "some desc", "priority" : "URGENT", "status" : stat[i], "createdBy" : "DevLeague", "assignedTo" : "Tyler"});
-    card.save();
-  }
-};
-
 app.get('/getAll', function(req, res) {
   Card.find({})
     .then((dataSomething) => {
@@ -70,32 +55,15 @@ app.get('/getAll', function(req, res) {
     });
 });
 
-app.post('/testpost', (req, res) => {
-  var card = new Card({ "title" : "fresh", "description" : "minty", "priority" : "lax", "status" : "todo", "createdBy" : "xin", "assignedTo" : "tyler"});
-  card.save();
-  res.send({test:"testing!!"});
-});
-
-app.post('/addACard', (req, res) => {
-  var rq = req.body;
-  var card = new Card({
-    "title" : rq.title,
-    "description" : rq.desc,
-    "priority": rq.priority,
-    "status": rq.status,
-    "createdBy": rq.author,
-    "assignedTo": rq.handler
-  });
-  card.save(function(err) {
-  });
-    res.send();
-});
-
-app.post('/seed', (req, res) => {
-  console.log(req.body);
-　seeder(req.body.num);
-  res.json({message: 'Seeded!'});
-});
+function seeder(howMany) {
+  var card;
+  var letters = ['a','q','x','b','r','y','c','s','z'];
+  var stat = [1,2,3,1,2,3,1,2,3];
+  for (var i = 0; i < howMany; i++){
+    card = new Card({ "title" : letters[i]+" Task", "description" : "some desc", "priority" : "URGENT", "status" : stat[i], "createdBy" : "DevLeague", "assignedTo" : "Tyler"});
+    card.save();
+  }
+};
 
 app.put('/update', function(req, res) {
   Card.update({ _id: req.body.id},
@@ -105,9 +73,6 @@ app.put('/update', function(req, res) {
 });
 
 app.put('/lefter', function(req, res) {
-  // if(req.body.id===req.body.id){
-    console.log('haha');
-  // }
   Card.update({ _id: req.body.id},
      { $inc: {status: -1}}, () => {
     res.json({});
@@ -125,6 +90,28 @@ app.delete('/delete', function(req, res) {
   res.json({message: 'Deleted!'});
   });
 });
+
+
+app.post('/seed', (req, res) => {
+  // console.log(req.body);
+　seeder(req.body.num);
+  res.json({message: 'Seeded!'});
+});
+
+app.post('/addACard', (req, res) => {
+  var rq = req.body;
+  var card = new Card({
+    "title" : rq.title,
+    "description" : rq.desc,
+    "priority": rq.priority,
+    "status": rq.status,
+    "createdBy": rq.author,
+    "assignedTo": rq.handler
+  });
+  card.save(function(err) {
+  });
+    res.send();
+});
 /*==============================
 =          Test Routes         =
 ==============================*/
@@ -132,6 +119,7 @@ app.delete('/delete', function(req, res) {
 var removeAll = function(db, cb) {
   Card.find({ _id: { $exists: true}}).remove(cb);
 };
+
 app.delete('/removeall', function(req, res) {
   removeAll(db, function(req, res) {
     Card.find({})
@@ -147,17 +135,55 @@ app.delete('/removeall', function(req, res) {
 
 
 
-app.get('/testing', function (req, res) {
-  Card.find({}, (err, docs) => {
-      res.json(docs);
+const onStart = (err) => {
+  if (err) {
+    throw new Error(err);
+  }
+  console.info(
+    `==> 🌎 Listening on port ${port}. ` +
+    `Open up http://localhost:${port}/ in your browser.`
+  );
+};
+// Check to see what dev environment we are in
+const isDeveloping = true;
+const port = isDeveloping ? 3000 : process.env.PORT;
+
+if (isDeveloping) {
+  app.set('host', 'http://localhost');
+  const compiler = webpack(config);
+  const middleware = webpackMiddleware(compiler, {
+    publicPath: config.output.publicPath,
+    contentBase: 'src',
+    stats: {
+      colors: true,
+      hash: false,
+      timings: true,
+      chunks: false,
+      chunkModules: false,
+      modules: false,
+    },
   });
-});
-
-
+  const response = (req, res) => {
+    res.write(middleware.fileSystem.readFileSync(path.resolve(__dirname, 'dist/index.html')));
+    res.end();
+  };
+  app.use(middleware);
+  app.use(webpackHotMiddleware(compiler));
+  app.get('*', response);
+} else {
+  app.use(bodyParser.urlencoded({ extended: true }));
+  app.use(bodyParser.json());
+  app.use(express.static(`${__dirname}/dist`));
+  app.get('*', (req, res) => {
+    res.write(
+      fs.readFileSync(path.resolve(__dirname, 'dist/index.html'))
+    );
+  });
+}
 /*======================================
 =            Listener            =
 ======================================*/
-const PORT = 2459;
+const PORT = 3000;
 app.listen(PORT, (req, res) => {
   console.log('app.listen');
 });
