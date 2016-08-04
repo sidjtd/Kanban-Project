@@ -1,5 +1,5 @@
 import React from 'react';
-import BigKanban from './comps/BigKanban.jsx';
+import BigKanban from './public/js/components/BigKanban.jsx';
 
 class App extends React.Component {
   render() {

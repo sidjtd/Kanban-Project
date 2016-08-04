@@ -1,11 +1,6 @@
 'use strict';
 const gulp = require('gulp');
 var webpackStream = require('webpack-stream');
-gulp.task('default', function() {
-  return gulp.src('src/entry.js')
-    .pipe(webpackStream())
-    .pipe(gulp.dest('dist/'));
-});
 const bodyParser = require('body-parser');
 const express = require('express');
 const path = require('path');
