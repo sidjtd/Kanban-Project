@@ -8,15 +8,13 @@ const db = mongoose.connection;
 =            Routes            =
 ==============================*/
 eRouter.get('/getAll', function(req, res) {
-  Card.find({})
-    .then((dataSomething) => {
-      // console.log(dataSomething)
-      res.send(dataSomething)
-    })
-    .catch((err) => {
-      console.log('this is the error' + err)
-    });
+  Card.find({}, function (err, tasks) {
+    console.log("We entered here",err,tasks);
+    if(err) {return res.send(err)}
+    return res.send(tasks)
+  });
 });
+
 
 eRouter.put('/update', function(req, res) {
   Card.update({ _id: req.body.id},
@@ -58,7 +56,8 @@ function seeder(howMany) {
 };
 
 eRouter.post('/seed', (req, res) => {
-　seeder(req.body.num);
+  console.log("seeded");
+　seeder(3);
   res.json({message: 'Seeded!'});
 });
 

@@ -9,12 +9,15 @@ import PostColumns from './PostColumns.jsx';
 class BigKanban extends React.Component {
   constructor(){
     super();
-    this.state = {
-      toggler : false,
-      ColData : [],
-      ColDataTwo : [],
-      ColDataThree : []
-    }
+/*----------  REMOVE  ----------*/
+    // this.state = {
+    //   toggler : false,
+    //   ColData : [],
+    //   ColDataTwo : [],
+    //   ColDataThree : []
+    // }
+/*--------  END  --------*/
+/*--------  NEW  --------*/
     this.updateCard = this.updateCard.bind(this)
     this.addCard = this.addCard.bind(this)
     this.newCard = this.newCard.bind(this)
@@ -24,43 +27,42 @@ class BigKanban extends React.Component {
     this.rightMove = this.rightMove.bind(this)
     this.seedIt = this.seedIt.bind(this)
   };
-  componentDidMount() {
-    this.getMongoData();
+  componentWillMount() {
+    this.loadData();
   };
 
-  getMongoData(card){
-    let parent = this;
-    var req = new XMLHttpRequest();
-    req.addEventListener("load", function () {
-      let xhrData = JSON.parse(this.response)
-      parent.setState({
-        ColData: xhrData.filter(function (card){
-          return card.status === 1;
-        }),
-        ColDataTwo: xhrData.filter(function (card){
-          return card.status === 2;
-        }),
-        ColDataThree: xhrData.filter(function (card){
-          return card.status === 3;
-        }),
-      });
+  loadData(){
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", function(e){
+      console.log("e",e);
+      console.log("this",this);
     });
+    // req.addEventListener("load", this.getMongoData)
     req.open("GET", "/getAll");
-    req.setRequestHeader("Content-Type", "application/json");
+    // req.setRequestHeader("Content-Type", "application/json");
     req.send();
   }
 
-  updateCard(cardId, status) {
-    if(status<3){
-      let parent = this;
-      const req = new XMLHttpRequest();
-      req.addEventListener("load", function (){
-        parent.getMongoData();
-      });
-      req.open("PUT", "/update");
-      req.setRequestHeader("Content-Type", "application/json");
-      req.send(JSON.stringify({id:cardId}));
-    }
+  getMongoData(card){
+    let xhrData = JSON.parse(card.currentTarget.response)
+    console.log(xhrData,'what the fffuuuuuuck');
+    const ColData = xhrData.filter(function (card){
+      return card.status === 1;
+    });
+    const ColDataTwo = xhrData.filter(function (card){
+      return card.status === 2;
+    });
+    const ColDataThree = xhrData.filter(function (card){
+      return card.status === 3;
+    });
+
+    const sendingObj = {
+          ColDataKey: ColData,
+          ColDataTwoKey: ColDataTwo,
+            ColDataThreeKey: ColDataThree,
+          }
+    console.log("my collection",ColData,ColDataTwo,ColDataThree)
+    this.props.itemSetDispatcher(sendingObj);
   }
 
   leftMove(cardId, status) {
@@ -135,6 +137,19 @@ class BigKanban extends React.Component {
     req.send(JSON.stringify({id:cardId}));
   }
 
+  updateCard(cardId, status) {
+    if(status<3){
+      let parent = this;
+      const req = new XMLHttpRequest();
+      req.addEventListener("load", function (){
+        parent.getMongoData();
+      });
+      req.open("PUT", "/update");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(JSON.stringify({id:cardId}));
+    }
+  }
+
   removeItAll(cardId) {
     let parent = this;
     const req = new XMLHttpRequest();
@@ -161,6 +176,7 @@ class BigKanban extends React.Component {
   }
 
   render() {
+    console.log(this.props,"holy crap this is some stuff");
     return (
       <div>
         <div id="bigk">
@@ -168,7 +184,7 @@ class BigKanban extends React.Component {
         <button onClick={this.seedIt}>SEED (TEST ONLY)</button>
         <input type="number" name="seedNothing" id="seedId" min="1" max="9" placeholder="0"/>
         <button onClick={this.removeItAll}>DROP (TEST ONLY)</button><br/>
-          {this.state.toggler ?
+          {this.props.toggler ?
             <div id="inputfield">
               <div className="left"><button className="inbutton" onClick={this.newCard}>CLOSE</button></div><br/>
               <form id="theNewForm">
@@ -197,12 +213,9 @@ class BigKanban extends React.Component {
             </div>: <div><button className="inbutton" onClick={this.newCard}>NEW MEMO</button></div>} <br/>
 
           <div id="postContainer">
-            <PostColumns data={this.state.ColData} rightMove={this.rightMove} leftMove={this.leftMove}
+            <PostColumns data={this.props.ColData} rightMove={this.rightMove} leftMove={this.leftMove}
             updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'TO DO'}/>
-            <PostColumns data={this.state.ColDataTwo} rightMove={this.rightMove} leftMove={this.leftMove}
-            updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DOING'}/>
-            <PostColumns data={this.state.ColDataThree} rightMove={this.rightMove} leftMove={this.leftMove}
-            updateCard={this.updateCard} deleteCard={this.deleteCard} colInfo={'DONE'}/>
+
           </div>
         </div><br/>
       </div>
@@ -214,8 +227,13 @@ class BigKanban extends React.Component {
 =            myStateToTops            =
 =====================================*/
 const mapTheStateToProps = (mapState, ownProps) => {
+    const stateData = mapState.reducer.toJS();
   return {
-    datMapper: mapState.reducer.toJS()
+    // stateData : mapState.reducer.toJS();
+    ColDataKey: stateData.ColData,
+    ColDataTwoKey: stateData.ColDataTwo,
+    ColDataThreeKey: stateData.ColDataThree,
+    toggler: false,
   }
 }
 const mapDispatchesToThoseProps = (leaveDispatchesToMe) => {
