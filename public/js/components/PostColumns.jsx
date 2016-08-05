@@ -1,5 +1,6 @@
-'use strict';
 import React from 'react';
+import Immutable from 'immutable';
+import { connect } from 'react-redux';
 import PostItems from './PostItems.jsx';
 /*===================================
 =            PostColumns            =

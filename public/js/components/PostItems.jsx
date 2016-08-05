@@ -1,4 +1,6 @@
 import React from 'react';
+import Immutable from 'immutable';
+import { connect } from 'react-redux';
 /*==================================
 =            Post Items            =
 ==================================*/
@@ -53,5 +55,27 @@ class PostItems extends React.Component {
     );
   };
 };
-
-export default PostItems;
+/*===================================
+=            REDUX STUFF            =
+===================================*/
+const mapTheStateToProps = (mapState, ownProps) => {
+  return {
+    data: mapState.reducer.toJS()
+  }
+}
+//allowing to
+const mapDispatchesToThoseProps = (leaveDispatchesToMe) => {
+  return {
+    deleteDispatcher : (index) => {
+      leaveDispatchesToMe({
+        type : 'DELETE_ITEM',
+        index
+      })
+    }
+  }
+}
+export default connect(
+  mapTheStateToProps,
+  mapDispatchesToThoseProps
+)(PostItems);
+// export default PostItems;

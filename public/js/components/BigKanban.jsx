@@ -1,8 +1,8 @@
-'use strict';
 import React from 'react';
+import Immutable from 'immutable';
+import { connect } from 'react-redux';
 import PostColumns from './PostColumns.jsx';
 // import styles from './BigKanban.scss';
-
 /*==================================
 =            Big Kanban            =
 ==================================*/
@@ -29,11 +29,11 @@ class BigKanban extends React.Component {
   };
 
   getMongoData(card){
-    let componentContext = this;
+    let parent = this;
     var oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function () {
       let xhrData = JSON.parse(this.response)
-      componentContext.setState({
+      parent.setState({
         ColData: xhrData.filter(function (card){
           return card.status === 1;
         }),
@@ -52,10 +52,10 @@ class BigKanban extends React.Component {
 
   updateCard(cardId, status) {
     if(status<3){
-      let componentContext = this;
+      let parent = this;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
-        componentContext.getMongoData();
+        parent.getMongoData();
       });
       oReq.open("PUT", "/update");
       oReq.setRequestHeader("Content-Type", "application/json");
@@ -65,10 +65,10 @@ class BigKanban extends React.Component {
 
   leftMove(cardId, status) {
     if(status>1){
-      let componentContext = this;
+      let parent = this;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
-        componentContext.getMongoData();
+        parent.getMongoData();
       });
       oReq.open("PUT", "/lefter");
       oReq.setRequestHeader("Content-Type", "application/json");
@@ -78,10 +78,10 @@ class BigKanban extends React.Component {
 
   rightMove(cardId, status) {
     if(status<3){
-      let componentContext = this;
+      let parent = this;
       const oReq = new XMLHttpRequest();
       oReq.addEventListener("load", function (){
-        componentContext.getMongoData();
+        parent.getMongoData();
       });
       oReq.open("PUT", "/righter");
       oReq.setRequestHeader("Content-Type", "application/json");
@@ -99,7 +99,7 @@ class BigKanban extends React.Component {
 
   addCard(e) {
     e.preventDefault();
-    var componentContext = this;
+    var parent = this;
     const titleVar = document.getElementById('titleField').value;
     const descVar = document.getElementById('descriptionField').value;
     const priorityVar = document.getElementById('priorityField').value;
@@ -109,7 +109,7 @@ class BigKanban extends React.Component {
     if(titleVar&&authorVar&&assignedVar){
       const oReq = new XMLHttpRequest();
       oReq.addEventListener('load', function(){
-          componentContext.getMongoData();
+          parent.getMongoData();
       });
       oReq.open('POST', "/addACard",true);
       oReq.setRequestHeader("Content-Type", "application/json")
@@ -125,10 +125,10 @@ class BigKanban extends React.Component {
   }
 
   deleteCard(cardId) {
-    let componentContext = this;
+    let parent = this;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function (){
-      componentContext.getMongoData();
+      parent.getMongoData();
     });
     oReq.open("DELETE", "/delete");
     oReq.setRequestHeader("Content-Type", "application/json");
@@ -136,10 +136,10 @@ class BigKanban extends React.Component {
   }
 
   removeItAll(cardId) {
-    let componentContext = this;
+    let parent = this;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function (){
-      componentContext.getMongoData();
+      parent.getMongoData();
     });
     oReq.open("DELETE", "/removeall");
     oReq.setRequestHeader("Content-Type", "application/json");
@@ -148,12 +148,12 @@ class BigKanban extends React.Component {
 
   seedIt(cardId) {
     console.log("Im in 1", cardId);
-    let componentContext = this;
+    let parent = this;
     const seedVar = document.getElementById('seedId').value;
     const oReq = new XMLHttpRequest();
     oReq.addEventListener("load", function (){
       console.log("Im in 2");
-      componentContext.getMongoData();
+      parent.getMongoData();
     });
     oReq.open("POST", "/seed");
     oReq.setRequestHeader("Content-Type", "application/json");
@@ -210,4 +210,27 @@ class BigKanban extends React.Component {
   };
 };
 
-export default BigKanban;
+/*=====================================
+=            myStateToTops            =
+=====================================*/
+const mapTheStateToProps = (mapState, ownProps) => {
+  return {
+    datMapper: mapState.reducer.toJS()
+  }
+}
+const mapDispatchesToThoseProps = (leaveDispatchesToMe) => {
+  return {
+    itemSetDispatcher : (data) => {
+      console.log(data,"possible state?")
+      leaveDispatchesToMe({
+        type : 'SET_ITEMS',
+        data
+      })
+    }
+  }
+}
+export default connect(
+  mapTheStateToProps,
+  mapDispatchesToThoseProps
+)(BigKanban);
+// export default BigKanban;
