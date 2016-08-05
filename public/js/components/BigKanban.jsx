@@ -30,8 +30,8 @@ class BigKanban extends React.Component {
 
   getMongoData(card){
     let parent = this;
-    var oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function () {
+    var req = new XMLHttpRequest();
+    req.addEventListener("load", function () {
       let xhrData = JSON.parse(this.response)
       parent.setState({
         ColData: xhrData.filter(function (card){
@@ -45,47 +45,47 @@ class BigKanban extends React.Component {
         }),
       });
     });
-    oReq.open("GET", "/getAll");
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send();
+    req.open("GET", "/getAll");
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send();
   }
 
   updateCard(cardId, status) {
     if(status<3){
       let parent = this;
-      const oReq = new XMLHttpRequest();
-      oReq.addEventListener("load", function (){
+      const req = new XMLHttpRequest();
+      req.addEventListener("load", function (){
         parent.getMongoData();
       });
-      oReq.open("PUT", "/update");
-      oReq.setRequestHeader("Content-Type", "application/json");
-      oReq.send(JSON.stringify({id:cardId}));
+      req.open("PUT", "/update");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(JSON.stringify({id:cardId}));
     }
   }
 
   leftMove(cardId, status) {
     if(status>1){
       let parent = this;
-      const oReq = new XMLHttpRequest();
-      oReq.addEventListener("load", function (){
+      const req = new XMLHttpRequest();
+      req.addEventListener("load", function (){
         parent.getMongoData();
       });
-      oReq.open("PUT", "/lefter");
-      oReq.setRequestHeader("Content-Type", "application/json");
-      oReq.send(JSON.stringify({id:cardId}));
+      req.open("PUT", "/lefter");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(JSON.stringify({id:cardId}));
     }
   }
 
   rightMove(cardId, status) {
     if(status<3){
       let parent = this;
-      const oReq = new XMLHttpRequest();
-      oReq.addEventListener("load", function (){
+      const req = new XMLHttpRequest();
+      req.addEventListener("load", function (){
         parent.getMongoData();
       });
-      oReq.open("PUT", "/righter");
-      oReq.setRequestHeader("Content-Type", "application/json");
-      oReq.send(JSON.stringify({id:cardId}));
+      req.open("PUT", "/righter");
+      req.setRequestHeader("Content-Type", "application/json");
+      req.send(JSON.stringify({id:cardId}));
     }
   }
 
@@ -107,13 +107,13 @@ class BigKanban extends React.Component {
     const authorVar = document.getElementById('createdByField').value;
     const assignedVar = document.getElementById('assignedToField').value;
     if(titleVar&&authorVar&&assignedVar){
-      const oReq = new XMLHttpRequest();
-      oReq.addEventListener('load', function(){
+      const req = new XMLHttpRequest();
+      req.addEventListener('load', function(){
           parent.getMongoData();
       });
-      oReq.open('POST', "/addACard",true);
-      oReq.setRequestHeader("Content-Type", "application/json")
-      oReq.send(JSON.stringify({
+      req.open('POST', "/addACard",true);
+      req.setRequestHeader("Content-Type", "application/json")
+      req.send(JSON.stringify({
         title: `${titleVar}`,
         desc: `${descVar}`,
         author: `${authorVar}`,
@@ -126,38 +126,38 @@ class BigKanban extends React.Component {
 
   deleteCard(cardId) {
     let parent = this;
-    const oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function (){
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", function (){
       parent.getMongoData();
     });
-    oReq.open("DELETE", "/delete");
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send(JSON.stringify({id:cardId}));
+    req.open("DELETE", "/delete");
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send(JSON.stringify({id:cardId}));
   }
 
   removeItAll(cardId) {
     let parent = this;
-    const oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function (){
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", function (){
       parent.getMongoData();
     });
-    oReq.open("DELETE", "/removeall");
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send();
+    req.open("DELETE", "/removeall");
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send();
   }
 
   seedIt(cardId) {
     console.log("Im in 1", cardId);
     let parent = this;
     const seedVar = document.getElementById('seedId').value;
-    const oReq = new XMLHttpRequest();
-    oReq.addEventListener("load", function (){
+    const req = new XMLHttpRequest();
+    req.addEventListener("load", function (){
       console.log("Im in 2");
       parent.getMongoData();
     });
-    oReq.open("POST", "/seed");
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send(JSON.stringify({num:`${seedVar}`}));
+    req.open("POST", "/seed");
+    req.setRequestHeader("Content-Type", "application/json");
+    req.send(JSON.stringify({num:`${seedVar}`}));
   }
 
   render() {
